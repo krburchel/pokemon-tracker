@@ -112,11 +112,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 :root{--bg:#f8f8f6;--bg2:#fff;--text:#1a1a1a;--text2:#666;--text3:#aaa;--border:#eee;--border2:#ddd;--caught-bg:#e8f7f2;--caught-border:#1D9E75;--shiny-bg:#fef3c7;--shiny-border:#d97706;--shadow-bg:rgba(0,0,0,0.45);--stat-bg:#f0f0ee;--loc-bg:#f5f5f3;--input-bg:#fff;}
 body.dark{--bg:#111;--bg2:#1e1e1e;--text:#f0f0f0;--text2:#999;--text3:#555;--border:#2e2e2e;--border2:#3a3a3a;--caught-bg:#0d2e22;--shiny-bg:#2e2200;--shadow-bg:rgba(0,0,0,0.7);--stat-bg:#252525;--loc-bg:#252525;--input-bg:#1e1e1e;}
 </style>
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div id="main-wrapper">
 <div class="tab-scroll"><div class="game-tabs" id="game-tabs"></div></div>
-<div id="toolbar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;padding:.625rem .875rem;background:var(--bg2);border:1px solid var(--border);border-radius:12px"><span style="font-size:13px;font-weight:700;color:var(--text);flex:1">Pokémon Tracker</span><button onclick="showStats()" style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;touch-action:manipulation">📊 Stats</button><button onclick="showHomeSync()" style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;touch-action:manipulation">🏠 Sync</button><button onclick="exportData()" style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;touch-action:manipulation">⬇ Export</button><label style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:12px;cursor:pointer;color:var(--text2);touch-action:manipulation">⬆ Import<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label><button onclick="toggleDark()" id="dark-btn" style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:14px;cursor:pointer;touch-action:manipulation" title="Toggle dark mode">🌙</button></div>
+<div id="toolbar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;padding:.625rem .875rem;background:var(--bg2);border:1px solid var(--border);border-radius:12px"><span style="font-size:13px;font-weight:700;color:var(--text);flex:1">Pokémon Tracker</span><button onclick="showStats()" style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;touch-action:manipulation">📊 Stats</button><button onclick="showHomeSync()" style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;touch-action:manipulation">🏠 Sync</button><button onclick="exportData()" style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;touch-action:manipulation">⬇ Export</button><label style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:12px;cursor:pointer;color:var(--text2);touch-action:manipulation">⬆ Import<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label><button onclick="authToggle()" id="auth-btn" style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;touch-action:manipulation">☁️ Sign in</button><button onclick="toggleDark()" id="dark-btn" style="padding:6px 10px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:14px;cursor:pointer;touch-action:manipulation" title="Toggle dark mode">🌙</button></div>
 <div id="app">
 <div class="header-row">
     <div><div class="title" id="game-title"></div><div class="subtitle" id="game-sub"></div></div>
@@ -607,6 +611,146 @@ function showGO(){
   renderGO();
 }
 function hideGO(){const g=document.getElementById('go-ui');if(g)g.style.display='none';const a=document.getElementById('app');if(a)a.style.display='block';}
+
+
+// ─────── FIREBASE ───────
+const firebaseConfig = {
+  apiKey: "AIzaSyBBYo2uN1nfQMBHMb_C_XXTSnex6tp99dE",
+  authDomain: "pokemon-tracker-8d5ac.firebaseapp.com",
+  projectId: "pokemon-tracker-8d5ac",
+  storageBucket: "pokemon-tracker-8d5ac.firebasestorage.app",
+  messagingSenderId: "869525751786",
+  appId: "1:869525751786:web:2ec719a2da6bc79d47d493"
+};
+firebase.initializeApp(firebaseConfig);
+const fbAuth = firebase.auth();
+const fbDb = firebase.firestore();
+let fbUser = null;
+let fbSyncing = false;
+
+// Merge two state objects — "caught/shiny/wishlist TRUE wins" logic
+function mergeStates(local, cloud){
+  const merged = {...cloud};  // start with cloud
+  for(const k in local){
+    const lv = local[k];
+    const cv = cloud[k];
+    if(!cv){merged[k] = lv; continue;}
+    merged[k] = {
+      caught: lv.caught || cv.caught,
+      shiny:  lv.shiny  || cv.shiny,
+      note:   lv.note || cv.note || '',
+      shadow: lv.shadow || cv.shadow,
+      purified: lv.purified || cv.purified,
+      lucky:  lv.lucky || cv.lucky,
+      xl:     lv.xl || cv.xl,
+    };
+  }
+  return merged;
+}
+function mergeWishlists(local, cloud){
+  return [...new Set([...local, ...cloud])];
+}
+function mergeGoState(local, cloud){
+  const merged = {...cloud};
+  for(const k in local){
+    const lv = local[k], cv = cloud[k];
+    if(!cv){merged[k] = lv; continue;}
+    merged[k] = {
+      caught: lv.caught || cv.caught,
+      shiny:  lv.shiny  || cv.shiny,
+      shadow: lv.shadow || cv.shadow,
+      purified: lv.purified || cv.purified,
+      lucky:  lv.lucky || cv.lucky,
+      xl:     lv.xl || cv.xl,
+    };
+  }
+  return merged;
+}
+
+async function pullFromCloud(){
+  if(!fbUser)return null;
+  try{
+    const doc = await fbDb.collection('pokemon_tracker').doc(fbUser.uid).get();
+    return doc.exists ? doc.data() : null;
+  }catch(e){console.error('Pull failed:',e);return null;}
+}
+
+async function pushToCloud(){
+  if(!fbUser || fbSyncing)return;
+  fbSyncing = true;
+  try{
+    await fbDb.collection('pokemon_tracker').doc(fbUser.uid).set({
+      state: state,
+      goState: goState,
+      wishlist: [...wishlist],
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  }catch(e){console.error('Push failed:',e);}
+  fbSyncing = false;
+}
+
+async function onSignedIn(user){
+  fbUser = user;
+  updateAuthUI();
+  // Pull cloud data
+  const cloud = await pullFromCloud();
+  if(cloud){
+    // Merge: both-true wins
+    state = mergeStates(state, cloud.state || {});
+    goState = mergeGoState(goState, cloud.goState || {});
+    wishlist = new Set(mergeWishlists([...wishlist], cloud.wishlist || []));
+    save(); goSave(); wlSave();
+  }
+  // Push merged result back
+  await pushToCloud();
+  render(); renderGO();
+}
+
+function onSignedOut(){
+  fbUser = null;
+  updateAuthUI();
+}
+
+function updateAuthUI(){
+  const btn = document.getElementById('auth-btn');
+  if(!btn)return;
+  if(fbUser){
+    const name = fbUser.displayName ? fbUser.displayName.split(' ')[0] : 'signed in';
+    btn.textContent = '☁️ ' + name;
+    btn.title = 'Click to sign out — ' + fbUser.email;
+  } else {
+    btn.textContent = '☁️ Sign in';
+    btn.title = 'Sign in to sync across devices';
+  }
+}
+
+function authToggle(){
+  if(fbUser){
+    if(confirm('Sign out? Your data will stay on this device but won\'t sync.')){
+      fbAuth.signOut();
+    }
+  } else {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    fbAuth.signInWithPopup(provider).catch(err=>{
+      alert('Sign-in failed: ' + err.message);
+    });
+  }
+}
+
+// Wire up auth state listener
+fbAuth.onAuthStateChanged(user=>{
+  if(user) onSignedIn(user);
+  else onSignedOut();
+});
+
+// Hook into save() and goSave() to auto-push when signed in
+const _origSave = save;
+save = function(){_origSave(); if(fbUser) pushToCloud();};
+const _origGoSave = goSave;
+goSave = function(){_origGoSave(); if(fbUser) pushToCloud();};
+const _origWlSave = wlSave;
+wlSave = function(){_origWlSave(); if(fbUser) pushToCloud();};
+
 
 goLoad();wlLoad();initDark();
 load();setGame('fr');

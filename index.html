@@ -27,6 +27,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .dot-ct{background:#0284c7}
 .dot-tm{background:#16a34a}
 .dot-id{background:#0891b2}
+.dot-form-a,.dot-form-g,.dot-form-h,.dot-form-p{width:14px;height:14px;border-radius:50%;font-size:9px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;line-height:1}
+.dot-form-a{background:#f59e0b}
+.dot-form-g{background:#8b5cf6}
+.dot-form-h{background:#92400e}
+.dot-form-p{background:#b91c1c}
+.tag-form-a{background:#fef3c7;color:#92400e}
+.tag-form-g{background:#ede9fe;color:#5b21b6}
+.tag-form-h{background:#fef3c7;color:#78350f}
+.tag-form-p{background:#fee2e2;color:#991b1b}
 .action-btn.alpha-on{background:#B85C38;border-color:#7A3A1E;color:#fff;font-weight:600}
 .action-btn.mega-on{background:#9A7B1F;border-color:#5A4700;color:#fff;font-weight:600}
 .tag-alpha{background:#fbeee4;color:#7A3A1E}
@@ -252,18 +261,28 @@ const LOCS={home:{},fr:null,lg:null,frlg:{1:["Starter — Pallet Town"],4:["Star
 // Gen 8 Hisui additions (introduced in Legends: Arceus, Nat. Dex 899–905)
 const G8H=[[899,"wyrdeer",["normal","psychic"]],[900,"kleavor",["bug","rock"]],[901,"ursaluna",["ground","normal"]],[902,"basculegion",["water","ghost"]],[903,"sneasler",["fighting","poison"]],[904,"overqwil",["dark","poison"]],[905,"enamorus",["fairy","flying"]]];
 
+// Regional variant forms. Entry shape: [natId, name, types, null, null, null, formCode]
+// formCode: 'a'=Alolan, 'g'=Galarian, 'h'=Hisuian, 'p'=Paldean
+const G_ALOLAN=[[19,"alolan rattata",["dark","normal"],null,null,null,"a"],[20,"alolan raticate",["dark","normal"],null,null,null,"a"],[26,"alolan raichu",["electric","psychic"],null,null,null,"a"],[27,"alolan sandshrew",["ice","steel"],null,null,null,"a"],[28,"alolan sandslash",["ice","steel"],null,null,null,"a"],[37,"alolan vulpix",["ice"],null,null,null,"a"],[38,"alolan ninetales",["ice","fairy"],null,null,null,"a"],[50,"alolan diglett",["ground","steel"],null,null,null,"a"],[51,"alolan dugtrio",["ground","steel"],null,null,null,"a"],[52,"alolan meowth",["dark"],null,null,null,"a"],[53,"alolan persian",["dark"],null,null,null,"a"],[74,"alolan geodude",["rock","electric"],null,null,null,"a"],[75,"alolan graveler",["rock","electric"],null,null,null,"a"],[76,"alolan golem",["rock","electric"],null,null,null,"a"],[88,"alolan grimer",["poison","dark"],null,null,null,"a"],[89,"alolan muk",["poison","dark"],null,null,null,"a"],[103,"alolan exeggutor",["grass","dragon"],null,null,null,"a"],[105,"alolan marowak",["fire","ghost"],null,null,null,"a"]];
+const G_GALARIAN=[[52,"galarian meowth",["steel"],null,null,null,"g"],[77,"galarian ponyta",["psychic"],null,null,null,"g"],[78,"galarian rapidash",["psychic","fairy"],null,null,null,"g"],[79,"galarian slowpoke",["psychic"],null,null,null,"g"],[80,"galarian slowbro",["poison","psychic"],null,null,null,"g"],[83,"galarian farfetchd",["fighting"],null,null,null,"g"],[110,"galarian weezing",["poison","fairy"],null,null,null,"g"],[122,"galarian mr-mime",["ice","psychic"],null,null,null,"g"],[144,"galarian articuno",["psychic","flying"],null,null,null,"g"],[145,"galarian zapdos",["fighting","flying"],null,null,null,"g"],[146,"galarian moltres",["dark","flying"],null,null,null,"g"],[199,"galarian slowking",["poison","psychic"],null,null,null,"g"],[222,"galarian corsola",["ghost"],null,null,null,"g"],[263,"galarian zigzagoon",["dark","normal"],null,null,null,"g"],[264,"galarian linoone",["dark","normal"],null,null,null,"g"],[554,"galarian darumaka",["ice"],null,null,null,"g"],[555,"galarian darmanitan",["ice"],null,null,null,"g"],[562,"galarian yamask",["ground","ghost"],null,null,null,"g"],[618,"galarian stunfisk",["ground","steel"],null,null,null,"g"]];
+const G_HISUIAN=[[58,"hisuian growlithe",["fire","rock"],null,null,null,"h"],[59,"hisuian arcanine",["fire","rock"],null,null,null,"h"],[100,"hisuian voltorb",["electric","grass"],null,null,null,"h"],[101,"hisuian electrode",["electric","grass"],null,null,null,"h"],[157,"hisuian typhlosion",["fire","ghost"],null,null,null,"h"],[211,"hisuian qwilfish",["dark","poison"],null,null,null,"h"],[215,"hisuian sneasel",["fighting","poison"],null,null,null,"h"],[503,"hisuian samurott",["water","dark"],null,null,null,"h"],[549,"hisuian lilligant",["grass","fighting"],null,null,null,"h"],[570,"hisuian zorua",["normal","ghost"],null,null,null,"h"],[571,"hisuian zoroark",["normal","ghost"],null,null,null,"h"],[628,"hisuian braviary",["psychic","flying"],null,null,null,"h"],[705,"hisuian sliggoo",["steel","dragon"],null,null,null,"h"],[706,"hisuian goodra",["steel","dragon"],null,null,null,"h"],[713,"hisuian avalugg",["ice","rock"],null,null,null,"h"],[724,"hisuian decidueye",["grass","fighting"],null,null,null,"h"]];
+const G_PALDEAN=[[128,"paldean tauros",["fighting"],null,null,null,"p"],[194,"paldean wooper",["poison","ground"],null,null,null,"p"]];
+// PokeAPI sprite ID overrides for regional variants. Key: <natId><formCode>. Falls back to base sprite if not present.
+const FORM_SPRITE={"19a":10091,"20a":10092,"26a":10100,"27a":10101,"28a":10102,"37a":10103,"38a":10104,"50a":10105,"51a":10106,"52a":10107,"53a":10108,"74a":10109,"75a":10110,"76a":10111,"88a":10112,"89a":10113,"103a":10114,"105a":10115,"52g":10161,"77g":10162,"78g":10163,"79g":10164,"80g":10165,"83g":10166,"110g":10167,"122g":10168,"144g":10169,"145g":10170,"146g":10171,"199g":10172,"222g":10173,"263g":10174,"264g":10175,"554g":10176,"555g":10177,"562g":10179,"618g":10180,"58h":10229,"59h":10230,"100h":10231,"101h":10232,"157h":10233,"211h":10234,"215h":10235,"503h":10236,"549h":10237,"570h":10238,"571h":10239,"628h":10240,"705h":10241,"706h":10242,"713h":10243,"724h":10244,"128p":10250,"194p":10253};
+const FORM_LABEL={"a":"Alolan","g":"Galarian","h":"Hisuian","p":"Paldean"};
+
 // Hisui Pokédex order (Legends: Arceus) — 242 entries
 const LA_DEX_ORDER=[722,723,724,155,156,157,501,502,503,399,400,396,397,398,403,404,405,265,266,267,268,269,77,78,133,134,135,136,196,197,470,471,700,41,42,169,425,426,401,402,418,419,412,413,414,74,75,76,234,899,446,143,46,47,172,25,26,63,64,65,390,391,392,427,428,420,421,54,55,415,416,123,900,212,214,439,122,190,424,129,130,422,423,211,904,440,113,242,406,315,407,455,548,549,114,465,339,340,453,454,280,281,282,475,193,469,449,450,417,434,435,216,217,901,704,705,706,95,208,111,112,464,438,185,108,463,175,176,468,387,388,389,137,233,474,92,93,94,442,198,430,201,363,364,365,223,224,451,452,58,59,431,432,66,67,68,441,355,356,477,393,394,395,458,226,550,902,37,38,72,73,456,457,240,126,467,81,82,462,436,437,239,125,466,207,472,443,444,445,299,476,100,101,479,433,358,200,429,173,35,36,215,903,461,361,362,478,408,409,410,411,220,221,473,712,713,459,460,570,571,627,628,447,448,480,481,482,485,486,488,641,642,645,905,483,484,487,493,489,490,492,491];
 const LA_IDS=new Set(LA_DEX_ORDER);
-const LA_ALL=[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G8H].filter((p,i,a)=>LA_IDS.has(p[0])&&a.findIndex(x=>x[0]===p[0])===i);
+const LA_ALL=[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G8H,...G_HISUIAN].filter((p,i,a)=>LA_IDS.has(p[0])&&a.findIndex(x=>x[0]===p[0]&&(x[6]||'')===(p[6]||''))===i);
 
 // Lumiose + Hyperspace combined (Legends: Z-A) — 364 entries (232 Lumiose + 132 Mega Dimension DLC)
 const ZA_DEX_ORDER=[152,153,154,498,499,500,158,159,160,661,662,663,659,660,664,665,666,13,14,15,16,17,18,179,180,181,504,505,406,315,407,129,130,688,689,120,121,669,670,671,672,673,677,678,667,668,674,675,568,569,702,172,25,26,173,35,36,167,168,23,24,63,64,65,92,93,94,543,544,545,679,680,681,69,70,71,511,512,513,514,515,516,307,308,309,310,280,281,282,475,228,229,333,334,531,682,683,684,685,133,134,135,136,196,197,470,471,700,427,428,353,354,582,583,584,322,323,449,450,529,530,551,552,553,66,67,68,443,444,445,703,302,303,359,447,448,79,80,199,318,319,602,603,604,147,148,149,1,2,3,4,5,6,7,8,9,618,676,686,687,690,691,692,693,704,705,706,225,361,362,478,459,460,712,713,123,212,127,214,587,701,708,709,559,560,714,715,707,607,608,609,142,696,697,698,699,95,208,304,305,306,694,695,710,711,246,247,248,656,657,658,870,650,651,652,227,653,654,655,371,372,373,115,780,374,375,376,716,717,718,719,150,56,57,979,52,53,863,83,865,104,105,137,233,474,951,952,957,958,959,967,969,970,479,971,972,769,770,352,973,615,977,978,996,997,998,999,1000,211,904,252,253,254,255,256,257,258,259,260,349,350,433,358,876,509,510,517,518,538,539,562,563,867,767,768,827,828,852,853,778,900,877,622,623,821,822,823,174,39,40,926,927,396,397,398,325,326,931,739,740,932,933,934,316,317,41,42,169,935,936,937,942,943,848,849,944,945,335,336,439,122,866,590,591,485,721,638,639,640,647,648,649,720,802,808,809,491,380,381,382,383,384,801,807];
 const ZA_IDS=new Set(ZA_DEX_ORDER);
-const ZA_ALL=[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G8H,...G9].filter((p,i,a)=>ZA_IDS.has(p[0])&&a.findIndex(x=>x[0]===p[0])===i);
+const ZA_ALL=[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G8H,...G9].filter((p,i,a)=>ZA_IDS.has(p[0])&&a.findIndex(x=>x[0]===p[0]&&(x[6]||'')===(p[6]||''))===i);
 const ZA_LUMIOSE_COUNT=232; // first 232 entries are Lumiose; the rest are Hyperspace
 
-const HOME_ALL=[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G8H,...G9].filter((p,i,a)=>a.findIndex(x=>x[0]===p[0])===i).sort((a,b)=>a[0]-b[0]);
+const HOME_ALL=[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G8H,...G9,...G_ALOLAN,...G_GALARIAN,...G_HISUIAN,...G_PALDEAN].filter((p,i,a)=>a.findIndex(x=>x[0]===p[0]&&(x[6]||'')===(p[6]||''))===i).sort((a,b)=>a[0]-b[0]||(a[6]||'').localeCompare(b[6]||''));
 const RD_K=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151];
 const RD_J=[152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151];
 const RD_H=[252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386];
@@ -277,7 +296,7 @@ const CT_IDS=new Set([872,873,831,832,819,820,220,221,473,439,122,866,238,124,23
 const GALAR_IOA_START=561;
 const GALAR_CT_START=607;
 const GALAR_IDS=new Set(RD_G);
-const GALAR_ALL=[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G8].filter((p,i,a)=>GALAR_IDS.has(p[0])&&a.findIndex(x=>x[0]===p[0])===i);
+const GALAR_ALL=[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G_GALARIAN].filter((p,i,a)=>GALAR_IDS.has(p[0])&&a.findIndex(x=>x[0]===p[0]&&(x[6]||'')===(p[6]||''))===i);
 const RD_P=[906,907,908,909,910,911,912,913,914,915,916,917,918,919,920,187,188,189,661,662,663,921,922,923,228,229,734,735,819,820,191,192,401,402,664,665,666,415,416,821,822,823,440,113,242,298,183,184,283,284,418,419,194,980,54,55,833,834,174,39,40,280,281,282,475,96,97,92,93,94,924,925,172,25,26,926,927,287,288,289,761,762,763,928,929,930,438,185,744,745,837,838,839,403,404,405,396,397,398,741,179,180,181,548,549,285,286,840,841,842,325,326,931,200,429,296,297,739,740,757,758,231,232,878,879,443,444,445,932,933,934,278,279,129,130,846,847,550,316,317,52,53,425,426,669,670,671,50,51,324,322,323,436,437,610,611,612,56,57,979,307,308,447,448,935,936,937,339,340,938,939,704,705,706,453,454,940,941,133,134,135,136,196,197,470,471,700,206,982,585,586,203,981,88,89,942,943,848,849,702,417,944,945,234,590,591,100,101,81,82,462,132,58,59,216,217,335,336,333,334,672,673,128,667,668,434,435,570,571,215,461,198,430,574,575,576,854,855,778,707,876,946,947,948,949,357,753,754,950,951,952,331,332,953,954,48,49,204,205,123,212,214,955,956,449,450,551,552,553,843,844,749,750,636,637,371,372,373,957,958,959,856,857,858,859,860,861,960,961,962,963,964,965,966,967,968,302,353,354,870,701,442,714,715,885,886,887,969,970,479,971,972,765,766,775,246,247,248,874,875,871,769,770,79,80,199,422,423,90,91,211,370,456,457,779,594,690,691,692,693,602,603,604,747,748,973,147,148,149,872,873,459,460,225,613,614,361,362,478,615,974,975,712,713,627,628,624,625,983,633,634,635,976,977,978,984,985,986,987,988,989,990,991,992,993,994,995,996,997,998,999,1000,1001,1002,1003,1004,1005,1006,1007,1008,167,168,193,469,195,261,262,313,314,341,342,540,541,542,742,743,23,24,69,70,71,161,162,1011,37,38,60,61,62,186,163,164,190,424,220,221,473,273,274,275,708,709,1012,1013,74,75,76,532,533,534,877,446,143,270,271,272,299,476,736,737,738,27,28,207,472,629,630,782,783,784,109,110,619,620,355,356,477,433,358,218,219,607,608,609,173,35,36,349,350,703,580,581,845,902,901,1014,1015,1016,1017,84,85,102,103,111,112,464,239,125,466,240,126,467,900,522,523,235,868,869,328,329,330,731,732,733,72,73,116,117,230,546,547,764,43,44,45,182,170,171,686,687,751,752,236,106,107,237,529,530,677,678,774,408,409,410,411,572,573,227,311,312,559,560,622,623,137,233,474,595,596,374,375,376,86,87,131,904,577,578,579,209,210,884,1018,1019,1,2,3,4,5,6,7,8,9,152,153,154,155,156,157,158,159,160,252,253,254,255,256,257,258,259,260,387,388,389,390,391,392,393,394,395,495,496,497,498,499,500,501,502,503,650,651,652,653,654,655,656,657,658,722,723,724,725,726,727,728,729,730,810,811,812,813,814,815,816,817,818,1020,1021,1023,1022,1024,1009,1010,1025];
 // Teal Mask and Indigo Disk DLC dex sets (Scarlet/Violet)
 const TM_IDS=new Set([167,168,193,469,194,195,261,262,313,314,341,342,540,541,542,742,743,23,24,172,25,26,69,70,71,161,162,396,397,398,753,754,840,841,842,1011,37,38,60,61,62,186,129,130,163,164,190,424,214,220,221,473,234,273,274,275,280,281,282,475,401,402,417,447,448,548,549,708,709,744,745,819,820,948,949,1012,1013,58,59,74,75,76,438,185,532,533,534,714,715,846,847,856,857,858,877,968,924,925,56,57,979,446,143,270,271,272,299,476,403,404,405,736,737,738,741,27,28,92,93,94,207,472,228,229,325,326,629,630,749,750,782,783,784,962,109,110,619,620,355,356,477,433,358,218,219,607,608,609,283,284,173,35,36,436,437,969,970,349,350,206,982,339,340,443,444,445,703,757,758,215,461,361,362,478,602,603,604,704,705,706,580,581,833,834,845,624,625,983,778,859,860,861,876,550,902,901,1014,1015,1016,1017]);
@@ -285,7 +304,7 @@ const ID_IDS=new Set([84,85,102,103,111,112,464,48,49,239,125,466,240,126,467,44
 const PALDEA_TM_START=401;
 const PALDEA_ID_START=500;
 const PALDEA_IDS=new Set(RD_P);
-const PALDEA_ALL=[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G8H,...G9].filter((p,i,a)=>PALDEA_IDS.has(p[0])&&a.findIndex(x=>x[0]===p[0])===i);
+const PALDEA_ALL=[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G8H,...G9,...G_PALDEAN].filter((p,i,a)=>PALDEA_IDS.has(p[0])&&a.findIndex(x=>x[0]===p[0]&&(x[6]||'')===(p[6]||''))===i);
 const RD_MAPS={};
 const _RD_ALL={K:RD_K,J:RD_J,H:RD_H,Si:RD_Si,U:RD_U,A:RD_A,G:RD_G,P:RD_P,Hi:LA_DEX_ORDER,Lu:ZA_DEX_ORDER};
 ["K","J","H","Si","U","A","G","P","Hi","Lu"].forEach(n=>{const m=new Map();_RD_ALL[n].forEach((id,i)=>m.set(id,i+1));RD_MAPS[n]=m;});
@@ -311,14 +330,14 @@ LOCS.scarlet=LOCS.sv;
 LOCS.violet=LOCS.sv;
 // Build Home locs: merge all game locs, combining entries per pokemon
 Object.entries(LOCS).forEach(([gid,glocs])=>{if(gid==='home')return;Object.entries(glocs).forEach(([id,locs])=>{const n=parseInt(id);if(!LOCS.home[n])LOCS.home[n]=[];locs.forEach(l=>{const entry=`[${gid.toUpperCase()}] ${l}`;if(!LOCS.home[n].includes(entry))LOCS.home[n].push(entry)})})});
-const GAME_DATA={home:{label:"Pokémon Home",gen:"All Gens · 1025",pokemon:HOME_ALL,versions:[],vColors:{}},fr:{label:"FireRed",gen:"Gen I–II · 271",pokemon:[...G1,...FRLG_SEVII],versions:["FR","LG"],vColors:{FR:["#FAC775","#633806"],LG:["#C0DD97","#27500A"]}},lg:{label:"LeafGreen",gen:"Gen I–II · 271",pokemon:[...G1,...FRLG_SEVII],versions:["LG","FR"],vColors:{LG:["#C0DD97","#27500A"],FR:["#FAC775","#633806"]}},gold:{label:"Gold",gen:"Gen I–II · 251",pokemon:[...G1,...G2],versions:["Go","Si"],vColors:{"Go":["#FAC775","#633806"],"Si":["#B5D4F4","#0C447C"]}},silver:{label:"Silver",gen:"Gen I–II · 251",pokemon:[...G1,...G2],versions:["Si","Go"],vColors:{"Si":["#B5D4F4","#0C447C"],"Go":["#FAC775","#633806"]}},crystal:{label:"Crystal",gen:"Gen I–II · 251",pokemon:[...G1,...G2],versions:["Cr"],vColors:{"Cr":["#9FE1CB","#085041"]}},ruby:{label:"Ruby",gen:"Gen I–III · 386",pokemon:[...G1,...G2,...G3],versions:["Ru","Sa"],vColors:{"Ru":["#F4C0D1","#72243E"],"Sa":["#B5D4F4","#0C447C"]}},sapphire:{label:"Sapphire",gen:"Gen I–III · 386",pokemon:[...G1,...G2,...G3],versions:["Sa","Ru"],vColors:{"Sa":["#B5D4F4","#0C447C"],"Ru":["#F4C0D1","#72243E"]}},emerald:{label:"Emerald",gen:"Gen I–III · 386",pokemon:[...G1,...G2,...G3],versions:[],vColors:{}},bd:{label:"Brilliant Diamond",gen:"Gen I–IV · 493",pokemon:[...G1,...G2,...G3,...G4],versions:["BD","SP"],vColors:{"BD":["#B5D4F4","#0C447C"],"SP":["#F4C0D1","#72243E"]}},sp:{label:"Shining Pearl",gen:"Gen I–IV · 493",pokemon:[...G1,...G2,...G3,...G4],versions:["SP","BD"],vColors:{"SP":["#F4C0D1","#72243E"],"BD":["#B5D4F4","#0C447C"]}},black:{label:"Black",gen:"Gen I–V · 649",pokemon:[...G1,...G2,...G3,...G4,...G5],versions:["B","W"],vColors:{"B":["#888780","#2C2C2A"],"W":["#D3D1C7","#5F5E5A"]}},white:{label:"White",gen:"Gen I–V · 649",pokemon:[...G1,...G2,...G3,...G4,...G5],versions:["W","B"],vColors:{"W":["#D3D1C7","#5F5E5A"],"B":["#888780","#2C2C2A"]}},xgame:{label:"X",gen:"Gen I–VI · 721",pokemon:[...G1,...G2,...G3,...G4,...G5,...G6],versions:["X","Y"],vColors:{"X":["#378ADD","#0C447C"],"Y":["#D4537E","#4B1528"]}},ygame:{label:"Y",gen:"Gen I–VI · 721",pokemon:[...G1,...G2,...G3,...G4,...G5,...G6],versions:["Y","X"],vColors:{"Y":["#D4537E","#4B1528"],"X":["#378ADD","#0C447C"]}},sun:{label:"Sun",gen:"Gen I–VII · 809",pokemon:[...G1,...G2,...G3,...G4,...G5,...G6,...G7],versions:["Su","Mo"],vColors:{"Su":["#FAC775","#633806"],"Mo":["#CECBF6","#26215C"]}},moon:{label:"Moon",gen:"Gen I–VII · 809",pokemon:[...G1,...G2,...G3,...G4,...G5,...G6,...G7],versions:["Mo","Su"],vColors:{"Mo":["#CECBF6","#26215C"],"Su":["#FAC775","#633806"]}},sword:{label:"Sword",gen:"Galar + IoA + CT · 664",pokemon:GALAR_ALL,versions:["Sw","Sh"],vColors:{"Sw":["#378ADD","#0C447C"],"Sh":["#D4537E","#4B1528"]}},shield:{label:"Shield",gen:"Galar + IoA + CT · 664",pokemon:GALAR_ALL,versions:["Sh","Sw"],vColors:{"Sh":["#D4537E","#4B1528"],"Sw":["#378ADD","#0C447C"]}},scarlet:{label:"Scarlet",gen:"Paldea + Teal Mask + Indigo Disk · 664",pokemon:PALDEA_ALL,versions:["Sc","Vi"],vColors:{"Sc":["#F5C4B3","#712B13"],"Vi":["#B5D4F4","#0C447C"]}},violet:{label:"Violet",gen:"Paldea + Teal Mask + Indigo Disk · 664",pokemon:PALDEA_ALL,versions:["Vi","Sc"],vColors:{"Vi":["#B5D4F4","#0C447C"],"Sc":["#F5C4B3","#712B13"]}},la:{label:"Legends: Arceus",gen:"Hisui Pokédex · 242",pokemon:LA_ALL,versions:[],vColors:{}},za:{label:"Legends: Z-A",gen:"Lumiose + Hyperspace · 364",pokemon:ZA_ALL,versions:[],vColors:{}},living:{label:"Living Dex",gen:"Aggregate across all games · 1025",pokemon:HOME_ALL,versions:[],vColors:{},aggregate:true}};
+const GAME_DATA={home:{label:"Pokémon Home",gen:"All Gens · 1025",pokemon:HOME_ALL,versions:[],vColors:{}},fr:{label:"FireRed",gen:"Gen I–II · 271",pokemon:[...G1,...FRLG_SEVII],versions:["FR","LG"],vColors:{FR:["#FAC775","#633806"],LG:["#C0DD97","#27500A"]}},lg:{label:"LeafGreen",gen:"Gen I–II · 271",pokemon:[...G1,...FRLG_SEVII],versions:["LG","FR"],vColors:{LG:["#C0DD97","#27500A"],FR:["#FAC775","#633806"]}},gold:{label:"Gold",gen:"Gen I–II · 251",pokemon:[...G1,...G2],versions:["Go","Si"],vColors:{"Go":["#FAC775","#633806"],"Si":["#B5D4F4","#0C447C"]}},silver:{label:"Silver",gen:"Gen I–II · 251",pokemon:[...G1,...G2],versions:["Si","Go"],vColors:{"Si":["#B5D4F4","#0C447C"],"Go":["#FAC775","#633806"]}},crystal:{label:"Crystal",gen:"Gen I–II · 251",pokemon:[...G1,...G2],versions:["Cr"],vColors:{"Cr":["#9FE1CB","#085041"]}},ruby:{label:"Ruby",gen:"Gen I–III · 386",pokemon:[...G1,...G2,...G3],versions:["Ru","Sa"],vColors:{"Ru":["#F4C0D1","#72243E"],"Sa":["#B5D4F4","#0C447C"]}},sapphire:{label:"Sapphire",gen:"Gen I–III · 386",pokemon:[...G1,...G2,...G3],versions:["Sa","Ru"],vColors:{"Sa":["#B5D4F4","#0C447C"],"Ru":["#F4C0D1","#72243E"]}},emerald:{label:"Emerald",gen:"Gen I–III · 386",pokemon:[...G1,...G2,...G3],versions:[],vColors:{}},bd:{label:"Brilliant Diamond",gen:"Gen I–IV · 493",pokemon:[...G1,...G2,...G3,...G4],versions:["BD","SP"],vColors:{"BD":["#B5D4F4","#0C447C"],"SP":["#F4C0D1","#72243E"]}},sp:{label:"Shining Pearl",gen:"Gen I–IV · 493",pokemon:[...G1,...G2,...G3,...G4],versions:["SP","BD"],vColors:{"SP":["#F4C0D1","#72243E"],"BD":["#B5D4F4","#0C447C"]}},black:{label:"Black",gen:"Gen I–V · 649",pokemon:[...G1,...G2,...G3,...G4,...G5],versions:["B","W"],vColors:{"B":["#888780","#2C2C2A"],"W":["#D3D1C7","#5F5E5A"]}},white:{label:"White",gen:"Gen I–V · 649",pokemon:[...G1,...G2,...G3,...G4,...G5],versions:["W","B"],vColors:{"W":["#D3D1C7","#5F5E5A"],"B":["#888780","#2C2C2A"]}},xgame:{label:"X",gen:"Gen I–VI · 721",pokemon:[...G1,...G2,...G3,...G4,...G5,...G6],versions:["X","Y"],vColors:{"X":["#378ADD","#0C447C"],"Y":["#D4537E","#4B1528"]}},ygame:{label:"Y",gen:"Gen I–VI · 721",pokemon:[...G1,...G2,...G3,...G4,...G5,...G6],versions:["Y","X"],vColors:{"Y":["#D4537E","#4B1528"],"X":["#378ADD","#0C447C"]}},sun:{label:"Sun",gen:"Gen I–VII · 809",pokemon:[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G_ALOLAN],versions:["Su","Mo"],vColors:{"Su":["#FAC775","#633806"],"Mo":["#CECBF6","#26215C"]}},moon:{label:"Moon",gen:"Gen I–VII · 809",pokemon:[...G1,...G2,...G3,...G4,...G5,...G6,...G7,...G_ALOLAN],versions:["Mo","Su"],vColors:{"Mo":["#CECBF6","#26215C"],"Su":["#FAC775","#633806"]}},sword:{label:"Sword",gen:"Galar + IoA + CT · 664",pokemon:GALAR_ALL,versions:["Sw","Sh"],vColors:{"Sw":["#378ADD","#0C447C"],"Sh":["#D4537E","#4B1528"]}},shield:{label:"Shield",gen:"Galar + IoA + CT · 664",pokemon:GALAR_ALL,versions:["Sh","Sw"],vColors:{"Sh":["#D4537E","#4B1528"],"Sw":["#378ADD","#0C447C"]}},scarlet:{label:"Scarlet",gen:"Paldea + Teal Mask + Indigo Disk · 664",pokemon:PALDEA_ALL,versions:["Sc","Vi"],vColors:{"Sc":["#F5C4B3","#712B13"],"Vi":["#B5D4F4","#0C447C"]}},violet:{label:"Violet",gen:"Paldea + Teal Mask + Indigo Disk · 664",pokemon:PALDEA_ALL,versions:["Vi","Sc"],vColors:{"Vi":["#B5D4F4","#0C447C"],"Sc":["#F5C4B3","#712B13"]}},la:{label:"Legends: Arceus",gen:"Hisui Pokédex · 242",pokemon:LA_ALL,versions:[],vColors:{}},za:{label:"Legends: Z-A",gen:"Lumiose + Hyperspace · 364",pokemon:ZA_ALL,versions:[],vColors:{}},living:{label:"Living Dex",gen:"Aggregate across all games · 1025",pokemon:HOME_ALL,versions:[],vColors:{},aggregate:true}};
 
 const SKEY='pktracker_v6';
-let state={},cGame='frlg',cFilter='all',cType=null,modalId=null;
+let state={},cGame='frlg',cFilter='all',cType=null,modalId=null,modalForm=null;
 function load(){try{state=JSON.parse(localStorage.getItem(SKEY)||'{}')}catch(e){state={}}}
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(state))}catch(e){}}
-function gs(id,game){const k=(game||cGame)+'_'+id;return state[k]||{caught:false,shiny:false,note:'',wishlist:false,alpha:false,mega:false}}
-function toggle(id,key){const k=cGame+'_'+id;const s=gs(id);if(key==='shiny'){s.shiny=!s.shiny}else if(key==='alpha'){s.alpha=!s.alpha}else if(key==='mega'){s.mega=!s.mega}else{s.caught=!s.caught;if(!s.caught)s.shiny=false}state[k]=s;save();render()}
+function gs(id,game,form){const k=(game||cGame)+'_'+id+(form?'_'+form:'');return state[k]||{caught:false,shiny:false,note:'',wishlist:false,alpha:false,mega:false}}
+function toggle(id,key,form){const k=cGame+'_'+id+(form?'_'+form:'');const s=gs(id,null,form);if(key==='shiny'){s.shiny=!s.shiny}else if(key==='alpha'){s.alpha=!s.alpha}else if(key==='mega'){s.mega=!s.mega}else{s.caught=!s.caught;if(!s.caught)s.shiny=false}state[k]=s;save();render()}
 function setGame(g){hideGO();cGame=g;cFilter='all';cType=null;document.getElementById('search').value='';document.querySelectorAll('.game-tab').forEach(t=>t.classList.remove('active'));document.getElementById('gt-'+g).classList.add('active');document.querySelectorAll('.filter-btn').forEach(b=>{const forGames=b.getAttribute('data-for');const hideForGames=b.getAttribute('data-hide-for');let show=true;if(forGames)show=forGames.split(' ').includes(g);else if(hideForGames)show=!hideForGames.split(' ').includes(g);b.style.display=show?'':'none';b.classList.remove('active');});document.querySelector('.filter-btn').classList.add('active');document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));renderLegend();render()}
 function setFilter(f,btn){cFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render()}
 function setType(t){cType=cType===t?null:t;document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===cType));render()}
@@ -350,27 +369,31 @@ function render(){
   if(GAME_DATA[cGame]&&GAME_DATA[cGame].aggregate){renderLiving();return}
   const gd=GAME_DATA[cGame];const list=gd.pokemon;
   const q=document.getElementById('search').value.toLowerCase();
-  const total=list.length,caught=list.filter(p=>gs(p[0]).caught).length,shiny=list.filter(p=>gs(p[0]).shiny).length,pct=Math.round(caught/total*100);
+  const total=list.length,caught=list.filter(p=>gs(p[0],null,p[6]).caught).length,shiny=list.filter(p=>gs(p[0],null,p[6]).shiny).length,pct=Math.round(caught/total*100);
   document.getElementById('game-title').textContent=gd.label;document.getElementById('game-sub').textContent=gd.gen+' Pokémon';
   document.getElementById('s-caught').textContent=caught;document.getElementById('s-shiny').textContent=shiny;document.getElementById('s-pct').textContent=pct+'%';
   document.getElementById('progress').style.width=pct+'%';
-  const filtered=list.filter(p=>{const[id,name,types,excl,trade,event]=p;const s=gs(id);if(q&&!name.includes(q)&&!String(id).includes(q))return false;if(cType&&!types.includes(cType))return false;if(cFilter==='caught')return s.caught;if(cFilter==='uncaught')return!s.caught;if(cFilter==='shiny')return s.shiny;if(cFilter==='alpha')return s.alpha;if(cFilter==='mega')return s.mega;if(cFilter==='hyperspace'){const rn=regionalNum(cGame,id);return cGame==='za'&&rn&&rn>ZA_LUMIOSE_COUNT;}if(cFilter==='ioa')return(cGame==='sword'||cGame==='shield')&&IOA_IDS.has(id);if(cFilter==='ct')return(cGame==='sword'||cGame==='shield')&&CT_IDS.has(id);if(cFilter==='tm')return(cGame==='scarlet'||cGame==='violet')&&TM_IDS.has(id);if(cFilter==='id')return(cGame==='scarlet'||cGame==='violet')&&ID_IDS.has(id);if(cFilter==='wishlist')return wishlist.has(id);if(cFilter==='exclusive')return excl&&excl.length>0;if(cFilter==='trade')return!!trade;if(cFilter==='event')return!!event;return true;});
+  const filtered=list.filter(p=>{const[id,name,types,excl,trade,event,form]=p;const s=gs(id,null,form);if(q&&!name.includes(q)&&!String(id).includes(q))return false;if(cType&&!types.includes(cType))return false;if(cFilter==='caught')return s.caught;if(cFilter==='uncaught')return!s.caught;if(cFilter==='shiny')return s.shiny;if(cFilter==='alpha')return s.alpha;if(cFilter==='mega')return s.mega;if(cFilter==='hyperspace'){const rn=regionalNum(cGame,id);return cGame==='za'&&rn&&rn>ZA_LUMIOSE_COUNT;}if(cFilter==='ioa')return(cGame==='sword'||cGame==='shield')&&IOA_IDS.has(id);if(cFilter==='ct')return(cGame==='sword'||cGame==='shield')&&CT_IDS.has(id);if(cFilter==='tm')return(cGame==='scarlet'||cGame==='violet')&&TM_IDS.has(id);if(cFilter==='id')return(cGame==='scarlet'||cGame==='violet')&&ID_IDS.has(id);if(cFilter==='wishlist')return wishlist.has(id);if(cFilter==='exclusive')return excl&&excl.length>0;if(cFilter==='trade')return!!trade;if(cFilter==='event')return!!event;return true;});
   // Sort by regional dex number when available, else national
   filtered.sort((a,b)=>{
     const ra=regionalNum(cGame,a[0]),rb=regionalNum(cGame,b[0]);
-    if(ra&&rb)return ra-rb;
-    if(ra)return -1;
-    if(rb)return 1;
-    return a[0]-b[0];
+    if(ra&&rb&&ra!==rb)return ra-rb;
+    if(ra&&!rb)return -1;
+    if(!ra&&rb)return 1;
+    if(a[0]!==b[0])return a[0]-b[0];
+    return (a[6]||'').localeCompare(b[6]||'');
   });
   const grid=document.getElementById('grid');
   if(!filtered.length){grid.innerHTML='<div class="empty">No Pokémon match your filters.</div>';return}
   grid.innerHTML=filtered.map(p=>{
-    const[id,name,types,excl,trade,event]=p;const s=gs(id);
+    const[id,name,types,excl,trade,event,form]=p;const s=gs(id,null,form);
+    const fa=form?`,'${form}'`:'';
+    const spriteId=FORM_SPRITE[id+(form||'')]||id;
     let cc='card';if(s.caught&&s.shiny)cc='card shiny-caught';else if(s.caught)cc='card caught';
     const tb=types.map(t=>{const[bg,col]=TC[t]||['#ccc','#555'];return`<span class="type-badge" style="background:${bg};color:${col}">${t}</span>`}).join('');
-    const hasLoc=!!(LOCS[cGame]&&LOCS[cGame][id]);
+    const hasLoc=!form&&!!(LOCS[cGame]&&LOCS[cGame][id]);
     let dots='<div class="corner-dots">';
+    if(form)dots+=`<div class="dot dot-form-${form}" title="${FORM_LABEL[form]} form">${form.toUpperCase()}</div>`;
     if(excl&&excl.length){const v=excl[0];const vc=GAME_DATA[cGame].vColors;const[bg]=vc&&vc[v]?vc[v]:['#ccc'];dots+=`<div class="dot" style="background:${bg}" title="${excl.join('/')} exclusive"></div>`}
     if(trade)dots+='<div class="dot dot-trade" title="Needs trade"></div>';
     if(event)dots+='<div class="dot dot-event" title="Event only"></div>';
@@ -386,34 +409,38 @@ function render(){
       if(ID_IDS.has(id))dots+='<div class="dot dot-id" title="Indigo Disk (Blueberry)"></div>';
     }
     dots+='</div>';
-    const alphaBtn=(cGame==='la'||cGame==='za')?`<button class="action-btn${s.alpha?' alpha-on':''}" onclick="toggle(${id},'alpha')" title="Alpha">α</button>`:'';
-    const megaBtn=(cGame==='za')?`<button class="action-btn${s.mega?' mega-on':''}" onclick="toggle(${id},'mega')" title="Mega Evolution">M</button>`:'';
-    return`<div class="${cc}">${dots}<img class="card-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="${name}" loading="lazy" onerror="this.style.display='none'"><div class="card-num">${(()=>{const r=regionalNum(cGame,id);return r?'#'+String(r).padStart(3,'0')+' <span style="color:var(--text3);font-size:9px">(#'+String(id).padStart(4,'0')+')</span>':'#'+String(id).padStart(4,'0')})()}</div><div class="card-name">${name}</div><div class="card-types">${tb}</div><div class="card-actions"><button class="action-btn${s.caught?' on':''}" onclick="toggle(${id},'caught')">${s.caught?'✓':'catch'}</button><button class="action-btn${s.shiny?' shiny-on':''}" onclick="toggle(${id},'shiny')">★</button>${alphaBtn}${megaBtn}<button class="icon-btn${s.note?' has-note':(hasLoc?' has-loc':'')}" onclick="openModal(${id})">${hasLoc?'📍':'✎'}</button><button id="wlb-${id}" class="icon-btn" onclick="wlToggle(${id})" style="${wishlist.has(id)?'color:#d97706;border-color:#d97706':''}" title="Wishlist">⭐</button></div></div>`
+    const alphaBtn=(cGame==='la'||cGame==='za')?`<button class="action-btn${s.alpha?' alpha-on':''}" onclick="toggle(${id},'alpha'${fa})" title="Alpha">α</button>`:'';
+    const megaBtn=(cGame==='za')?`<button class="action-btn${s.mega?' mega-on':''}" onclick="toggle(${id},'mega'${fa})" title="Mega Evolution">M</button>`:'';
+    return`<div class="${cc}">${dots}<img class="card-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteId}.png" alt="${name}" loading="lazy" onerror="this.style.display='none'"><div class="card-num">${(()=>{const r=regionalNum(cGame,id);return r?'#'+String(r).padStart(3,'0')+' <span style="color:var(--text3);font-size:9px">(#'+String(id).padStart(4,'0')+')</span>':'#'+String(id).padStart(4,'0')})()}</div><div class="card-name">${name}</div><div class="card-types">${tb}</div><div class="card-actions"><button class="action-btn${s.caught?' on':''}" onclick="toggle(${id},'caught'${fa})">${s.caught?'✓':'catch'}</button><button class="action-btn${s.shiny?' shiny-on':''}" onclick="toggle(${id},'shiny'${fa})">★</button>${alphaBtn}${megaBtn}<button class="icon-btn${s.note?' has-note':(hasLoc?' has-loc':'')}" onclick="openModal(${id}${fa})">${hasLoc?'📍':'✎'}</button><button id="wlb-${id}" class="icon-btn" onclick="wlToggle(${id})" style="${wishlist.has(id)?'color:#d97706;border-color:#d97706':''}" title="Wishlist">⭐</button></div></div>`
   }).join('')
 }
-const ALL_POKEMON=[...G1,...FRLG_SEVII,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G8H,...G9];
+const ALL_POKEMON=[...G1,...FRLG_SEVII,...G2,...G3,...G4,...G5,...G6,...G7,...G8,...G8H,...G9,...G_ALOLAN,...G_GALARIAN,...G_HISUIAN,...G_PALDEAN];
 // Game tab abbreviations for Living Dex chips
 const GAME_ABBR={fr:'FR',lg:'LG',gold:'G',silver:'S',crystal:'C',ruby:'R',sapphire:'Sa',emerald:'E',bd:'BD',sp:'SP',black:'B',white:'W',xgame:'X',ygame:'Y',sun:'Su',moon:'Mo',sword:'Sw',shield:'Sh',scarlet:'Sc',violet:'Vi',la:'LA',za:'ZA',home:'H',go:'GO'};
-// Build a national-dex-id → aggregate state map across all games (and GO)
+// Build a (id, form) → aggregate state map across all games (and GO). Map keys are `${id}_${form||''}`.
 function buildLivingMap(){
   const map={};
   for(const k in state){
-    const sep=k.lastIndexOf('_');if(sep<0)continue;
-    const game=k.slice(0,sep);if(!game||game==='living')continue;
-    if(!GAME_DATA[game])continue; // skip orphan keys
-    const id=parseInt(k.slice(sep+1));if(!id)continue;
-    if(!map[id])map[id]={caught:false,shiny:false,games:[],shinyGames:[]};
+    const parts=k.split('_');
+    let game,id,form='';
+    if(parts.length===2){game=parts[0];id=parseInt(parts[1]);}
+    else if(parts.length===3){game=parts[0];id=parseInt(parts[1]);form=parts[2];}
+    else continue;
+    if(!game||game==='living'||!GAME_DATA[game]||!id)continue;
+    const mk=id+'_'+form;
+    if(!map[mk])map[mk]={caught:false,shiny:false,games:[],shinyGames:[]};
     const s=state[k];
-    if(s.caught){if(!map[id].games.includes(game)){map[id].caught=true;map[id].games.push(game)}}
-    if(s.shiny){if(!map[id].shinyGames.includes(game)){map[id].shiny=true;map[id].shinyGames.push(game)}}
+    if(s.caught){if(!map[mk].games.includes(game)){map[mk].caught=true;map[mk].games.push(game)}}
+    if(s.shiny){if(!map[mk].shinyGames.includes(game)){map[mk].shiny=true;map[mk].shinyGames.push(game)}}
   }
   if(typeof goState==='object'&&goState){
     for(const id in goState){
       const nid=parseInt(id);if(!nid)continue;
       const gs2=goState[id];
-      if(!map[nid])map[nid]={caught:false,shiny:false,games:[],shinyGames:[]};
-      if(gs2.caught){map[nid].caught=true;if(!map[nid].games.includes('go'))map[nid].games.push('go')}
-      if(gs2.shiny){map[nid].shiny=true;if(!map[nid].shinyGames.includes('go'))map[nid].shinyGames.push('go')}
+      const mk=nid+'_';
+      if(!map[mk])map[mk]={caught:false,shiny:false,games:[],shinyGames:[]};
+      if(gs2.caught){map[mk].caught=true;if(!map[mk].games.includes('go'))map[mk].games.push('go')}
+      if(gs2.shiny){map[mk].shiny=true;if(!map[mk].shinyGames.includes('go'))map[mk].shinyGames.push('go')}
     }
   }
   return map;
@@ -429,7 +456,7 @@ function renderLiving(){
   const livingMap=buildLivingMap();
   const total=list.length;
   let caught=0,shiny=0;
-  for(const p of list){const m=livingMap[p[0]];if(m){if(m.caught)caught++;if(m.shiny)shiny++}}
+  for(const p of list){const m=livingMap[p[0]+'_'+(p[6]||'')];if(m){if(m.caught)caught++;if(m.shiny)shiny++}}
   const pct=Math.round(caught/total*100);
   document.getElementById('game-title').textContent=gd.label;
   document.getElementById('game-sub').textContent=gd.gen;
@@ -438,7 +465,7 @@ function renderLiving(){
   document.getElementById('s-pct').textContent=pct+'%';
   document.getElementById('progress').style.width=pct+'%';
   const filtered=list.filter(p=>{
-    const[id,name,types]=p;const m=livingMap[id]||{caught:false,shiny:false,games:[],shinyGames:[]};
+    const[id,name,types,,,,form]=p;const m=livingMap[id+'_'+(form||'')]||{caught:false,shiny:false,games:[],shinyGames:[]};
     if(q&&!name.includes(q)&&!String(id).includes(q))return false;
     if(cType&&!types.includes(cType))return false;
     if(cFilter==='caught')return m.caught;
@@ -447,27 +474,31 @@ function renderLiving(){
     if(cFilter==='wishlist')return wishlist.has(id);
     return true;
   });
-  filtered.sort((a,b)=>a[0]-b[0]);
+  filtered.sort((a,b)=>a[0]-b[0]||(a[6]||'').localeCompare(b[6]||''));
   const grid=document.getElementById('grid');
   if(!filtered.length){grid.innerHTML='<div class="empty">No Pokémon match your filters.</div>';return}
   grid.innerHTML=filtered.map(p=>{
-    const[id,name,types]=p;const m=livingMap[id]||{caught:false,shiny:false,games:[],shinyGames:[]};
+    const[id,name,types,,,,form]=p;const m=livingMap[id+'_'+(form||'')]||{caught:false,shiny:false,games:[],shinyGames:[]};
     let cc='card';if(m.caught&&m.shiny)cc='card shiny-caught';else if(m.caught)cc='card caught';
     const tb=types.map(t=>{const[bg,col]=TC[t]||['#ccc','#555'];return`<span class="type-badge" style="background:${bg};color:${col}">${t}</span>`}).join('');
     const shinySet=new Set(m.shinyGames);
     const chips=m.games.length?m.games.map(g=>{const ab=GAME_ABBR[g]||g;const isShiny=shinySet.has(g);const label=(GAME_DATA[g]&&GAME_DATA[g].label)||g;return`<button class="living-chip${isShiny?' shiny':''}" onclick="jumpToGame('${g}',${id})" title="${label}${isShiny?' (shiny)':''}">${ab}</button>`}).join(''):'<span class="living-none">— not caught —</span>';
     const wlOn=wishlist.has(id);
-    return`<div class="${cc}"><img class="card-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="${name}" loading="lazy" onerror="this.style.display='none'"><div class="card-num">#${String(id).padStart(4,'0')}</div><div class="card-name">${name}</div><div class="card-types">${tb}</div><div class="living-chips">${chips}</div><div class="card-actions" style="justify-content:center"><button id="wlb-${id}" class="icon-btn" onclick="wlToggle(${id})" style="${wlOn?'color:#d97706;border-color:#d97706':''}" title="Wishlist">⭐</button></div></div>`
+    const spriteId=FORM_SPRITE[id+(form||'')]||id;
+    const formDot=form?`<div class="corner-dots"><div class="dot dot-form-${form}" title="${FORM_LABEL[form]} form">${form.toUpperCase()}</div></div>`:'';
+    return`<div class="${cc}">${formDot}<img class="card-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteId}.png" alt="${name}" loading="lazy" onerror="this.style.display='none'"><div class="card-num">#${String(id).padStart(4,'0')}</div><div class="card-name">${name}</div><div class="card-types">${tb}</div><div class="living-chips">${chips}</div><div class="card-actions" style="justify-content:center"><button id="wlb-${id}" class="icon-btn" onclick="wlToggle(${id})" style="${wlOn?'color:#d97706;border-color:#d97706':''}" title="Wishlist">⭐</button></div></div>`
   }).join('')
 }
-function findPoke(id){return ALL_POKEMON.find(p=>p[0]===id)}
-function openModal(id){
-  modalId=id;const p=findPoke(id);if(!p)return;const[,name,types,excl,trade,event]=p;const s=gs(id);
+function findPoke(id,form){return ALL_POKEMON.find(p=>p[0]===id&&(p[6]||'')===(form||''))||ALL_POKEMON.find(p=>p[0]===id)}
+function openModal(id,form){
+  modalId=id;modalForm=form||null;const p=findPoke(id,form);if(!p)return;const[,name,types,excl,trade,event]=p;const s=gs(id,null,form);
   document.getElementById('m-name').textContent=name;const rn=regionalNum(cGame,id);
   document.getElementById('m-meta').textContent=(rn?'#'+String(rn).padStart(3,'0')+' (Nat. #'+String(id).padStart(4,'0')+')':'#'+String(id).padStart(4,'0'))+' · '+types.join(' / ');
-  document.getElementById('m-sprite').src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+  const spriteId=FORM_SPRITE[id+(form||'')]||id;
+  document.getElementById('m-sprite').src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteId}.png`;
   document.getElementById('m-note').value=s.note||'';
   const tags=[];
+  if(form&&FORM_LABEL[form])tags.push(`<span class="tag tag-form-${form}">${FORM_LABEL[form]} form</span>`);
   if(excl&&excl.length){const v=excl[0];const vc=GAME_DATA[cGame].vColors;const[bg,col]=vc&&vc[v]?vc[v]:['#dbeafe','#1d4ed8'];tags.push(`<span class="tag tag-excl" style="background:${bg};color:${col}">${excl.join('/')} exclusive</span>`)}
   if(trade)tags.push('<span class="tag tag-trade">Needs trade</span>');
   if(event)tags.push('<span class="tag tag-event">Event only</span>');
@@ -480,8 +511,8 @@ function openModal(id){
   if(locs.length){document.getElementById('m-locs').innerHTML=locs.map(l=>`<div class="loc-item">${l}</div>`).join('');ls.style.display=''}else{ls.style.display='none'}
   document.getElementById('modal').style.display='flex'
 }
-function closeModal(){document.getElementById('modal').style.display='none';modalId=null}
-function saveModal(){if(!modalId)return;const k=cGame+'_'+modalId;const s=gs(modalId);s.note=document.getElementById('m-note').value.trim();state[k]=s;save();closeModal();render()}
+function closeModal(){document.getElementById('modal').style.display='none';modalId=null;modalForm=null}
+function saveModal(){if(!modalId)return;const k=cGame+'_'+modalId+(modalForm?'_'+modalForm:'');const s=gs(modalId,null,modalForm);s.note=document.getElementById('m-note').value.trim();state[k]=s;save();closeModal();render()}
 
 const tabsEl=document.getElementById('game-tabs');
 Object.entries(GAME_DATA).forEach(([id,gd])=>{const btn=document.createElement('button');btn.className='game-tab';btn.id='gt-'+id;btn.textContent=gd.label;btn.onclick=()=>setGame(id);tabsEl.appendChild(btn)});
@@ -553,7 +584,7 @@ const GAME_ORDER=['fr','lg','gold','silver','crystal','ruby','sapphire','emerald
 function showStats(){
   const el=document.getElementById('stats-content');
   let h='<div style="display:flex;flex-direction:column;gap:8px">';
-  const ht=HOME_ALL.length,hc=HOME_ALL.filter(p=>gs(p[0],'home').caught).length,hp=Math.round(hc/ht*100);
+  const ht=HOME_ALL.length,hc=HOME_ALL.filter(p=>gs(p[0],'home',p[6]).caught).length,hp=Math.round(hc/ht*100);
   h+='<div style="padding:12px;background:var(--stat-bg);border-radius:10px;margin-bottom:4px">'
     +'<div style="display:flex;justify-content:space-between;margin-bottom:6px">'
     +'<span style="font-size:14px;font-weight:700;color:var(--text)">Overall (Home)</span>'
@@ -562,7 +593,7 @@ function showStats(){
     +'<div style="height:100%;width:'+hp+'%;background:#1D9E75;border-radius:999px"></div></div></div>';
   for(const gid of GAME_ORDER){
     const gd=GAME_DATA[gid];if(!gd)continue;
-    const t=gd.pokemon.length,c=gd.pokemon.filter(p=>gs(p[0],gid).caught).length,p=Math.round(c/t*100);
+    const t=gd.pokemon.length,c=gd.pokemon.filter(p=>gs(p[0],gid,p[6]).caught).length,p=Math.round(c/t*100);
     const col=p===100?'#1D9E75':p>50?'#378ADD':'#ccc';
     h+='<div style="display:flex;align-items:center;gap:10px">'
       +'<span style="font-size:12px;color:var(--text2);width:145px;flex-shrink:0">'+gd.label+'</span>'
@@ -586,19 +617,20 @@ function showStats(){
 // ── HOME SYNC ──
 function showHomeSync(){
   const el=document.getElementById('home-sync-content');
-  const caughtAnywhere=new Set();
-  for(const gid of GAME_ORDER){const gd=GAME_DATA[gid];if(!gd)continue;gd.pokemon.forEach(p=>{if(gs(p[0],gid).caught)caughtAnywhere.add(p[0]);});}
-  GO_POKEMON.forEach(p=>{if(goGet(p[0]).caught)caughtAnywhere.add(p[0]);});
-  const needsSync=HOME_ALL.filter(p=>caughtAnywhere.has(p[0])&&!gs(p[0],'home').caught);
+  const caughtAnywhere=new Set();  // entries: "<id>_<form>" (form is '' for base)
+  for(const gid of GAME_ORDER){const gd=GAME_DATA[gid];if(!gd)continue;gd.pokemon.forEach(p=>{if(gs(p[0],gid,p[6]).caught)caughtAnywhere.add(p[0]+'_'+(p[6]||''));});}
+  GO_POKEMON.forEach(p=>{if(goGet(p[0]).caught)caughtAnywhere.add(p[0]+'_');});
+  const needsSync=HOME_ALL.filter(p=>caughtAnywhere.has(p[0]+'_'+(p[6]||''))&&!gs(p[0],'home',p[6]).caught);
   if(!needsSync.length){
     el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text2);font-size:14px">All good! Everything is already marked in Home.</div>';
   } else {
     let h='<p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">'+needsSync.length+' Pok\u00e9mon to transfer:</p>'
       +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px">';
     h+=needsSync.map(p=>{
-      const[id,name,types]=p;const[bg,col]=TC[types[0]]||['#eee','#555'];
+      const[id,name,types,,,,form]=p;const[bg,col]=TC[types[0]]||['#eee','#555'];
+      const spriteId=FORM_SPRITE[id+(form||'')]||id;
       return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px;display:flex;align-items:center;gap:8px">'
-        +'<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'+id+'.png" style="width:36px;height:36px;image-rendering:pixelated" loading="lazy">'
+        +'<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'+spriteId+'.png" style="width:36px;height:36px;image-rendering:pixelated" loading="lazy">'
         +'<div><div style="font-size:9px;color:var(--text3)">#'+String(id).padStart(4,'0')+'</div>'
         +'<div style="font-size:11px;font-weight:600;color:var(--text);text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px">'+name+'</div>'
         +'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:999px;background:'+bg+';color:'+col+'">'+types[0]+'</span></div></div>';
@@ -611,9 +643,9 @@ function showHomeSync(){
 }
 function markAllSynced(){
   const caughtAnywhere=new Set();
-  for(const gid of GAME_ORDER){const gd=GAME_DATA[gid];if(!gd)continue;gd.pokemon.forEach(p=>{if(gs(p[0],gid).caught)caughtAnywhere.add(p[0]);});}
-  GO_POKEMON.forEach(p=>{if(goGet(p[0]).caught)caughtAnywhere.add(p[0]);});
-  HOME_ALL.forEach(p=>{if(caughtAnywhere.has(p[0])&&!gs(p[0],'home').caught){const s=gs(p[0],'home');s.caught=true;state['home_'+p[0]]=s;}});
+  for(const gid of GAME_ORDER){const gd=GAME_DATA[gid];if(!gd)continue;gd.pokemon.forEach(p=>{if(gs(p[0],gid,p[6]).caught)caughtAnywhere.add(p[0]+'_'+(p[6]||''));});}
+  GO_POKEMON.forEach(p=>{if(goGet(p[0]).caught)caughtAnywhere.add(p[0]+'_');});
+  HOME_ALL.forEach(p=>{const form=p[6]||'';const ck=p[0]+'_'+form;if(caughtAnywhere.has(ck)&&!gs(p[0],'home',p[6]).caught){const s=gs(p[0],'home',p[6]);s.caught=true;state['home_'+p[0]+(form?'_'+form:'')]=s;}});
   save();document.getElementById('home-sync-panel').style.display='none';if(cGame==='home')render();
 }
 
